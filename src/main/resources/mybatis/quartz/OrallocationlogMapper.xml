@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.autewifi.project.quartz.mapper.OrallocationlogMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.autewifi.project.quartz.domain.Orallocationlog">
+        <id column="allo_id" property="id" />
+        <result column="allo_brorcode" property="brorcode" />
+        <result column="allo_uid" property="uid" />
+        <result column="allo_uname" property="uname" />
+        <result column="allo_dealuid" property="dealuid" />
+        <result column="allo_dealuname" property="dealuname" />
+        <result column="allo_type" property="type" />
+        <result column="allo_ctime" property="ctime" />
+        <result column="allo_transrecestate" property="transrecestate" />
+        <result column="allo_transrecetime" property="transrecetime" />
+    </resultMap>
+
+
+    <!-- 关联查询sql -->
+    <sql id="relSelect">
+        SELECT a.*
+        FROM kd_orallocationlog a
+        <where>
+            <if test="page!=null and page.pageData!=null">
+                <if test="page.pageData.id != null">
+                    AND a.allo_id = #{page.pageData.id}
+                </if>
+                <if test="page.pageData.brorcode != null">
+                    AND a.allo_brorcode LIKE CONCAT('%', #{page.pageData.brorcode}, '%')
+                </if>
+                <if test="page.pageData.uid != null">
+                    AND a.allo_uid LIKE CONCAT('%', #{page.pageData.uid}, '%')
+                </if>
+                <if test="page.pageData.uname != null">
+                    AND a.allo_uname LIKE CONCAT('%', #{page.pageData.uname}, '%')
+                </if>
+                <if test="page.pageData.dealuid != null">
+                    AND a.allo_dealuid LIKE CONCAT('%', #{page.pageData.dealuid}, '%')
+                </if>
+                <if test="page.pageData.dealuname != null">
+                    AND a.allo_dealuname LIKE CONCAT('%', #{page.pageData.dealuname}, '%')
+                </if>
+                <if test="page.pageData.type != null">
+                    AND a.allo_type = #{page.pageData.type}
+                </if>
+                <if test="page.pageData.ctime != null">
+                    AND a.allo_ctime LIKE CONCAT('%', #{page.pageData.ctime}, '%')
+                </if>
+                <if test="page.pageData.transrecestate != null">
+                    AND a.allo_transrecestate = #{page.pageData.transrecestate}
+                </if>
+                <if test="page.pageData.transrecetime != null">
+                    AND a.allo_transrecetime LIKE CONCAT('%', #{page.pageData.transrecetime}, '%')
+                </if>
+            </if>
+        </where>
+    </sql>
+
+    <!-- 分页查询 -->
+    <select id="listPage" resultMap="BaseResultMap">
+        <include refid="relSelect"></include>
+    </select>
+
+    <!-- 查询全部 -->
+    <select id="listAll" resultMap="BaseResultMap">
+        <include refid="relSelect"></include>
+    </select>
+
+</mapper>

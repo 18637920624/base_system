@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.autewifi.project.quartz.mapper.KkOrderMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.autewifi.project.quartz.domain.KkOrder">
+        <id column="orde_id" property="id"/>
+        <result column="orde_code" property="code"/>
+        <result column="orde_acticode" property="acticode"/>
+        <result column="orde_actiname" property="actiname"/>
+        <result column="orde_suprcode" property="suprcode"/>
+        <result column="orde_suprname" property="suprname"/>
+        <result column="orde_suprprice" property="suprprice"/>
+        <result column="orde_payamount" property="payamount"/>
+        <result column="orde_schcode" property="schcode"/>
+        <result column="orde_seloper" property="seloper"/>
+        <result column="orde_iswithno" property="iswithno"/>
+        <result column="orde_telephone" property="telephone"/>
+        <result column="orde_username" property="username"/>
+        <result column="orde_ctime" property="ctime"/>
+        <result column="orde_paytype" property="paytype"/>
+        <result column="orde_paytime" property="paytime"/>
+        <result column="orde_allostate" property="allostate"/>
+        <result column="orde_dealwithorgid" property="dealwithorgid"/>
+        <result column="orde_dealwithuid" property="dealwithuid"/>
+        <result column="orde_dealwithuname" property="dealwithuname"/>
+        <result column="orde_allodate" property="allodate"/>
+        <result column="orde_timeoutbackdate" property="timeoutbackdate"/>
+        <result column="orde_state" property="state"/>
+        <result column="orde_recoprobid" property="recoprobid"/>
+        <result column="orde_remark" property="remark"/>
+        <result column="orde_manageid" property="manageid"/>
+        <result column="orde_managename" property="managename"/>
+        <result column="orde_managetime" property="managetime"/>
+        <result column="orde_audit" property="audit"/>
+        <result column="aute_deleted" property="deleted"/>
+        <result column="version" property="version"/>
+    </resultMap>
+
+    <update id="overTime">
+        update kk_order
+        set orde_allostate = -1,
+            orde_state     = 2
+        where date(orde_timeoutbackdate) >= date(#{date})
+    </update>
+    <select id="selectByRules" resultMap="BaseResultMap">
+        select * from kk_order a  left join kd_orderextend b on a.orde_code = b.orex_ordecode
+        WHERE (a.orde_allostate = 0 or a.orde_allostate= -1) and orde_state = 2
+        <if test="rules != null">
+            AND (
+            <foreach collection="rules" item="item" separator="or">
+                (
+                #{item.schcodes} like CONCAT('%', a.orde_schcode , '%')
+                and #{item.opers} like CONCAT('%', a.orde_seloper, '%')
+                )
+            </foreach>
+            )
+        </if>
+        <if test="group != null">
+            <if test="group.digrOrderscopestime != null">
+                and date(a.orde_ctime) >= date(#{group.digrOrderscopestime})
+            </if>
+            <if test="group.digrOrderscopeetime != null">
+                and date(a.orde_ctime) &lt;= date(#{group.digrOrderscopeetime})
+            </if>
+            <if test="group.digrTagfilter != null">
+                and find_in_set(a.orde_recoprobid,#{group.digrTagfilter})
+            </if>
+        </if>
+        limit 1
+    </select>
+    <select id="selectTimeOver" resultType="com.autewifi.project.quartz.domain.KkOrderDTO">
+        select 'KK' as type, a.*
+        from kk_order a
+        where a.aute_deleted = 0
+          and (a.orde_timeoutbackdate >= #{date} or a.orde_timeoutbackdate is null)
+    </select>
+
+
+</mapper>

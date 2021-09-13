@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.autewifi.project.quartz.mapper.ProdsystemMapper">
+
+    <select id="selectUserAllot" resultType="com.autewifi.project.quartz.domain.UserAllotDTO">
+        SELECT * FROM (
+        SELECT a.user_code as usercode,a.nickname AS nickname,c.digr_distmaxlimit as distmaxlimit,c.digr_beyotimerecy as
+        beyotimerecy,
+        (SELECT COUNT( 1 ) FROM kd_order b WHERE b.orde_dealwithuid = a.user_code AND b.orde_state = 2 AND
+        b.orde_allostate IN ( 1, 2 )) AS unum,
+        ( SELECT count( 1 ) FROM kd_order ko WHERE ko.orde_dealwithuid = a.user_code AND DATE( orde_allodate ) =
+        DATE(NOW())) AS overnum
+        FROM sys_user a
+        LEFT JOIN sys_user_datajurigroup b ON a.user_code = b.udjg_usercode
+        <if test="type == 'kd' ">
+            AND b.udjg_module = 1
+        </if>
+        <if test="type == 'kk' ">
+            AND b.udjg_module = 1
+        </if>
+        <if test="type == 'yx' ">
+            AND b.udjg_module = 1
+        </if>
+        LEFT JOIN kd_datajurigroup c ON b.udjg_djgrcode = c.digr_code
+        LEFT JOIN kd_datapermissrules d ON c.digr_code = d.dpru_digrcode
+        WHERE FIND_IN_SET(#{schocode} , d.dpru_schcodes)
+        AND FIND_IN_SET(#{oper} , d.dpru_opers)
+        AND (c.digr_tagfilter is null or c.digr_tagfilter = '' or FIND_IN_SET(#{tag},c.digr_tagfilter))
+        AND d.dpru_locations LIKE CONCAT('%',#{city},'%')
+        <if test="type == 'kd' ">
+            AND a.kd_open = 1
+        </if>
+        <if test="type == 'kk' ">
+            AND a.kk_open = 1
+        </if>
+        <if test="type == 'yx' ">
+            AND a.yx_open = 1
+        </if>
+        ) yx
+        WHERE (yx.distmaxlimit = 0 OR yx.distmaxlimit > yx.overnum)
+        ORDER BY yx.unum, RAND()  LIMIT 1
+    </select>
+
+</mapper>

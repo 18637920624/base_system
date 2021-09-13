@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.autewifi.project.quartz.mapper.OrderMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.autewifi.project.quartz.domain.Order">
+        <id column="orde_id" property="id"/>
+        <result column="orde_code" property="code"/>
+        <result column="orde_acticode" property="acticode"/>
+        <result column="orde_actiname" property="actiname"/>
+        <result column="orde_suprcode" property="suprcode"/>
+        <result column="orde_suprname" property="suprname"/>
+        <result column="orde_suprprice" property="suprprice"/>
+        <result column="orde_payamount" property="payamount"/>
+        <result column="orde_schcode" property="schcode"/>
+        <result column="orde_seloper" property="seloper"/>
+        <result column="orde_iswithno" property="iswithno"/>
+        <result column="orde_telephone" property="telephone"/>
+        <result column="orde_username" property="username"/>
+        <result column="orde_ctime" property="ctime"/>
+        <result column="orde_paytype" property="paytype"/>
+        <result column="orde_paytime" property="paytime"/>
+        <result column="orde_allostate" property="allostate"/>
+        <result column="orde_dealwithorgid" property="dealwithorgid"/>
+        <result column="orde_dealwithuid" property="dealwithuid"/>
+        <result column="orde_dealwithuname" property="dealwithuname"/>
+        <result column="orde_allodate" property="allodate"/>
+        <result column="orde_timeoutbackdate" property="timeoutbackdate"/>
+        <result column="orde_state" property="state"/>
+        <result column="orde_isdockingauth" property="isdockingauth"/>
+        <result column="orde_recoprobid" property="recoprobid"/>
+        <result column="orde_remark" property="remark"/>
+        <result column="orde_manageid" property="manageid"/>
+        <result column="orde_managename" property="managename"/>
+        <result column="orde_managetime" property="managetime"/>
+        <result column="orde_audit" property="audit"/>
+        <result column="aute_deleted" property="deleted"/>
+        <result column="version" property="version"/>
+        <result column="type" property="type"/>
+    </resultMap>
+
+
+    <update id="overTime">
+        update kd_order
+        set orde_allostate = -1,
+            orde_state     = 2
+        where date(orde_timeoutbackdate) >= date(#{date})
+    </update>
+
+    <select id="selectTimeOver" resultMap="BaseResultMap">
+        (SELECT 'kd' AS type, a.orde_id, orde_code, orde_allostate, orde_dealwithuid, orde_dealwithuname
+         FROM kd_order a
+         WHERE a.aute_deleted = 0
+           AND a.orde_allostate in (1, 2)
+           AND a.orde_state = 2
+           AND a.orde_timeoutbackdate &lt; #{date})
+        UNION ALL
+        (SELECT 'kk' AS type, a.orde_id, orde_code, orde_allostate, orde_dealwithuid, orde_dealwithuname
+         FROM kk_order a
+         WHERE a.aute_deleted = 0
+           AND a.orde_allostate in (1, 2)
+           AND a.orde_state = 2
+           AND a.orde_timeoutbackdate &lt; #{date})
+        UNION ALL
+        (SELECT 'yx' AS type, a.orde_id, orde_code, orde_allostate, orde_dealwithuid, orde_dealwithuname
+         FROM yx_order a
+         WHERE a.aute_deleted = 0
+           AND a.orde_allostate in (1, 2)
+           AND a.orde_state = 2
+           AND a.orde_timeoutbackdate &lt; #{date})
+    </select>
+
+
+    <select id="selectAllot" resultType="com.autewifi.project.quartz.domain.OrderAllotDto">
+        (SELECT a.orde_id      as id,
+                a.orde_code    as ordecode,
+                a.orde_schcode as schocode,
+                a.orde_seloper as oper,
+                b.orex_city    as city,
+                'kd'           as type
+         FROM kd_order a,
+              kd_orderextend b
+         WHERE a.orde_code = b.orex_ordecode
+           and a.aute_deleted = 0
+           AND a.orde_allostate in (0, -1)
+           AND a.orde_state = 2)
+        union all
+        (SELECT a.orde_id      as id,
+                a.orde_code    as ordecode,
+                a.orde_schcode as schocode,
+                a.orde_seloper as oper,
+                b.orex_city    as city,
+                'kk'           as type
+         FROM kk_order a,
+              kk_orderextend b
+         WHERE a.orde_code = b.orex_ordecode
+           and a.aute_deleted = 0
+           AND a.orde_allostate in (0, -1)
+           AND a.orde_state = 2)
+        union all
+        (SELECT a.orde_id      as id,
+                a.orde_code    as ordecode,
+                a.orde_schcode as schocode,
+                a.orde_seloper as oper,
+                b.orex_city    as city,
+                'yx'           as type
+         FROM yx_order a,
+              yx_orderextend b
+         WHERE a.orde_code = b.orex_ordecode
+           and a.aute_deleted = 0
+           AND a.orde_allostate in (0, -1)
+           AND a.orde_state = 2)
+    </select>
+
+</mapper>
